@@ -3,7 +3,7 @@ import { SortableElement } from "react-sortable-hoc"
 
 const SortableItem = SortableElement(props => {
     return (  
-       <div className="list-group-item ">
+       <div style={{cursor: "pointer"}} className="list-group-item ">
             <div className="d-flex justify-content-between align-items-stretch">
                 <div className="custom-control custom-checkbox mb-3">
                     <input className="custom-control-input" type="checkbox" id="customCheck"></input>
