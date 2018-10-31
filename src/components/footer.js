@@ -5,8 +5,7 @@ class Footer extends React.Component {
 	render () {
 		return (
 				<div>
-					<footer style={{height: "1000px", marginTop: "100px"}} className=" bg-light border-top">
-		  
+					<footer style={{height: "200px", marginTop: "100px"}} className="bg-light border-top opacity">
 					</footer>
 				</div>
 			)

@@ -1,142 +1,145 @@
 //React
 import React, {Component} from 'react'
-import SortableListTodo from './sortableListTodo.js'
-import SortableListCompleted from './sortableListCompleted.js'
-import Header from './header.js'
-import Footer from './footer.js'
+import MultiListContainer from './components/multiListContainer'
+import Header from './components/header.js'
+import Footer from './components/footer.js'
 import { arrayMove } from 'react-sortable-hoc'
-    
+
+import { library } from '@fortawesome/fontawesome-svg-core'
+//import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faTrash, faCoffee } from '@fortawesome/free-solid-svg-icons'
+
+library.add(faTrash, faCoffee)
+
 class App extends Component {
   
-    state = { 
-        sortableTasks: 
-            [
-            {id: 1, label: "Rent a car"},
-            {id: 2, label: "Eat lunch"},
-            {id: 3, label: "Buy a horse"}
-            ],
-        sortableTasksCompleted:
-            [
-            {id: 1111, label: "Clean the house"},
-            {id: 2222, label: "Do the dishes"},    
-            ]   
+    state = {
+        formValue: '',
+        formInfo: '',
+        multiList: [
+            {id: 111, title: "Not started"},
+            {id: 222, title: "In process"},
+            {id: 333, title: "Done"},
+        ],
+        taskList: [
+            {id: 101, title: "Task One", listID: 111},
+            {id: 102, title: "Task Two", listID: 333},
+            {id: 103, title: "Task Three", listID: 222},
+            {id: 104, title: "Task Four", listID: 333},
+        ],
+    }
+
+    /* Controlled form inputs */
+    handleFormChange = (event) => {
+        this.setState({formInfo: '' })
+        this.setState({formValue: event.target.value})
+    }
+
+    /* react sortable hoc */
+    onSortEnd = ({oldIndex, newIndex}) => {
+        const taskList = [...this.state.taskList]
+        const updatedTaskList = arrayMove(taskList, oldIndex, newIndex)
+        this.setState({ taskList: [...updatedTaskList]})
+        localStorage.setItem("taskList", JSON.stringify(updatedTaskList))
+    }
+
+    /* Other help-functions */
+    getMultiList = (listID, taskID) => {
+        const multiList = this.state.multiList.filter(item => item.id !== listID).map(item => <li key={item.id} onClick={() => this.moveTask(taskID, item.id)}>{item.title}</li>)
+        return (
+                <ul>{multiList}</ul>
+        )
+    }
+
+    /* functions which handle taskList updates */
+    moveTask = (taskID, MoveToListID) => {
+        const taskList = [...this.state.taskList]
+        const taskTitle = taskList.filter(item => item.id === taskID).map(item => item.title)
+        const updatedTask = {id: taskID, title: taskTitle, listID: MoveToListID}
+        const updatedTaskList = taskList.filter(item => item.id !== taskID).concat(updatedTask)
+        this.setState({ taskList: [...updatedTaskList]})
+        localStorage.setItem("taskList", JSON.stringify(updatedTaskList))
+    }
+
+    clearTaskList = listID => {
+        const filteredTaskList = this.state.taskList.filter(item => item.listID !== listID)
+        this.setState ({taskList: [...filteredTaskList]})
+        localStorage.setItem("taskList", JSON.stringify(filteredTaskList))     
+    }
+
+    deleteTask = taskID => {
+        const filteredTaskList = this.state.taskList.filter(item => item.id !== taskID)
+        this.setState ({taskList: [...filteredTaskList]}) 
+        localStorage.setItem("taskList", JSON.stringify(filteredTaskList))
+    }
+
+    addTask = (formValue, listID) => {
+            const taskList = [...this.state.taskList]
+            const newTask = {id: Date.now(), title: formValue, listID: listID}
+            const updatedTaskList = [...taskList, newTask]
+            this.setState({ taskList: [...updatedTaskList]})
+            localStorage.setItem("taskList", JSON.stringify(updatedTaskList))
+    }
+
+    /* Functions which handle multiList updates */
+    addList = (event) => {
+        event.preventDefault()
+        if (this.state.formValue !== "") {
+            const thisMultiList = [...this.state.multiList]
+            const newList = {id: Date.now(), title: this.state.formValue}
+            const updatedMultiList = [...thisMultiList, newList] 
+            this.setState ({ multiList: [...updatedMultiList]}) 
+            this.setState ({formValue: ''})
+            localStorage.setItem("multiList", JSON.stringify(updatedMultiList))
+        }
+        else
+            this.setState({formInfo: 'Form can not be empty!' })
+    }
+
+    deleteMultiList = (listID) => {
+        const multiList = [...this.state.multiList]
+        const taskList = [...this.state.taskList]
+        const filteredMultilist = multiList.filter(item => item.id !== listID)
+        const filteredTaskList = taskList.filter(item => item.listID !== listID)
+        this.setState ({multiList: filteredMultilist})
+        this.setState ({taskList: filteredTaskList})
+        localStorage.setItem("multiList", JSON.stringify(filteredMultilist))
+        localStorage.setItem("taskList", JSON.stringify(filteredTaskList))   
     }
 
     render() {
         return (
-          <div>
-            <div className="container">
-                <Header />
-                <div className="row">
-                    <div className="col-md-6">
-                        <SortableListTodo   
-                            sortableTasks={this.state.sortableTasks} 
-                            onDelete={this.deleteTaskTodo} 
-                            onReset={this.emptyListTodo}
-                            onAddItem={this.addItem}
-                            onDone={this.moveToCompletedList}
-                            onSortEnd={this.onSortEndTodo}/> 
-                    </div>
-                    <div className="col-md-6">
-                        <SortableListCompleted   
-                            sortableTasksCompleted={this.state.sortableTasksCompleted} 
-                            onDelete={this.deleteTaskCompleted} 
-                            onReset={this.emptyListCompleted}
-                            onAddItem={this.addItem}
-                            onNotCompleted={this.moveToTodoList}
-                            onSortEnd={this.onSortEndCompleted}/>
+          <div className="app-background">
+                <div className="mb-4">
+                    <Header />                
+                    <div className="row ml-2">
+                        <div className="col-md-6">
+                            <form className="form-group form-inline">
+                                <input  type="text" 
+                                        value= {this.state.formValue}
+                                        onChange={this.handleFormChange}
+                                        className="form-control mb-2 w-50 bg-white"/>
+                                <button onClick={this.addList} className="btn btn-block btn-outline-primary bg-white mb-2 ml-2 w-25">Add new list</button> 
+                            </form>
+                            <div className="m-2">{this.state.formInfo}</div>
+                        </div>
                     </div>
                 </div>
-            </div>
-                              
+                <div className="row m-2">
+                        {<MultiListContainer    
+                            multiList={this.state.multiList}
+                            taskList={this.state.taskList}
+                            getMultiList={this.getMultiList}
+                            addTask={this.addTask}
+                            deleteTask={this.deleteTask}
+                            clearTaskList={this.clearTaskList}
+                            onSortEnd={this.onSortEnd}
+                            deleteMultiList={this.deleteMultiList}
+                        />}
+                </div>                             
             <Footer />    
           </div>
-        );
-    }
-
-    moveToTodoList = (itemID) => {
-        const sortableTasks = [...this.state.sortableTasks]
-        const sortableTasksCompleted = [...this.state.sortableTasksCompleted]
-        const updatedSortableTasksCompleted = sortableTasksCompleted.filter(item => item.id !== itemID)
-        const movedTask = sortableTasksCompleted.filter(item => item.id === itemID)
-        const updatedSortableTasks = sortableTasks.concat(movedTask)
- 
-        this.setState ({sortableTasksCompleted: [...updatedSortableTasksCompleted]})
-        this.setState ({sortableTasks: [...updatedSortableTasks]})
-
-        localStorage.setItem('sortableTasksCompleted', JSON.stringify(updatedSortableTasksCompleted))
-        localStorage.setItem('sortableTasks', JSON.stringify(updatedSortableTasks))
-    }
-
-    moveToCompletedList = (itemID) => {
-        //Delete task from Todo list
-        const sortableTasks = [...this.state.sortableTasks]
-        const completedTask = sortableTasks.filter(item => item.id === itemID) 
-        const updatedSortableTasks = sortableTasks.filter(item => item.id !== itemID) 
-        
-        const sortableTasksCompleted = [...this.state.sortableTasksCompleted]
-        const updatedSortableTasksCompleted = sortableTasksCompleted.concat(completedTask)    
-
-        this.setState ({ sortableTasks: [...updatedSortableTasks]})
-        this.setState ({ sortableTasksCompleted: [...updatedSortableTasksCompleted]})
-
-        localStorage.setItem('sortableTasksCompleted', JSON.stringify(updatedSortableTasksCompleted))
-        localStorage.setItem('sortableTasks', JSON.stringify(updatedSortableTasks))
-    }
-
-    onSortEndTodo = ({oldIndex, newIndex}) => {
-        const sortableTasks = [...this.state.sortableTasks]
-        const new_sortableTasks = arrayMove(sortableTasks, oldIndex, newIndex)
-        this.setState({
-            sortableTasks: [...new_sortableTasks]
-        })
-        localStorage.setItem("sortableTasks", JSON.stringify(new_sortableTasks))
-    }
-
-     onSortEndCompleted = ({oldIndex, newIndex}) => {
-        const sortableTasksCompleted = [...this.state.sortableTasksCompleted]
-        const new_sortableTasksCompleted = arrayMove(sortableTasksCompleted, oldIndex, newIndex)
-        this.setState({
-            sortableTasksCompleted: [...new_sortableTasksCompleted]
-        })
-        localStorage.setItem("sortableTasksCompleted", JSON.stringify(new_sortableTasksCompleted))
-    }
-
-    deleteTaskTodo = (itemID) => {
-        const sortableTasks = [...this.state.sortableTasks]
-        const updatedList = sortableTasks.filter(item => item.id !== itemID) 
-        this.setState ({ sortableTasks: [...updatedList]})
-        localStorage.setItem('sortableTasks', JSON.stringify(updatedList))
-    }
-
-    deleteTaskCompleted = (itemID) => {
-        const sortableTasksCompleted = [...this.state.sortableTasksCompleted]
-        const updatedList = sortableTasksCompleted.filter(item => item.id !== itemID) 
-        this.setState ({ sortableTasksCompleted: [...updatedList]})
-        localStorage.setItem('sortableTasksCompleted', JSON.stringify(updatedList))
-    }
-
-    emptyListTodo = () => { 
-        const sortableTasks = [...this.state.sortableTasks]
-        sortableTasks.length = 0
-        this.setState({ sortableTasks })
-        localStorage.setItem('sortableTasks', JSON.stringify(sortableTasks))
-    }
-
-    emptyListCompleted = () => { 
-        const sortableTasksCompleted = [...this.state.sortableTasksCompleted]
-        sortableTasksCompleted.length = 0
-        this.setState({ sortableTasksCompleted })
-        localStorage.setItem('sortableTasksCompleted', JSON.stringify(sortableTasksCompleted))
-    }
-
-    addItem = (event, value) => {    
-        const sortableTasks = [...this.state.sortableTasks];
-        const newItem = { id: Date.now(), label: value} 
-        const updatedList = [...sortableTasks, newItem] 
-        this.setState ({ sortableTasks: [...updatedList]})  
-     
-        localStorage.setItem('sortableTasks', JSON.stringify(updatedList))        
+        )
     }
 
     componentDidMount = () => {

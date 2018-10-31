@@ -2,3 +2,13 @@
 .btn-outline-primary:hover {
 	color: #007bff !important;
 }
+
+.app-background {
+  background-image: url(../images/fish.jpg);
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+.opacity {
+	opacity: 0.5;
+}
