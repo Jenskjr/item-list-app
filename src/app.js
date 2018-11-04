@@ -111,19 +111,26 @@ class App extends Component {
         return (
           <div className="app-background">
                 <div className="mb-4">
-                    <Header />                
-                    <div className="row ml-2">
-                        <div className="col-md-6">
-                            <form className="form-group form-inline">
-                                <input  type="text" 
-                                        value= {this.state.formValue}
-                                        onChange={this.handleFormChange}
-                                        className="form-control mb-2 w-50 bg-white"/>
-                                <button onClick={this.addList} className="btn btn-block btn-outline-primary bg-white mb-2 ml-2 w-25">Add new list</button> 
+                                   
+                    
+                            <form>
+                                <div className="border-dark border-bottom">
+                                    <Header /> 
+                                    <div className="row ml-2 mr-2 pb-4">
+                                        <div className="col-md-3 mb-2">
+                                            <input  type="text" 
+                                                    value= {this.state.formValue}
+                                                    onChange={this.handleFormChange}
+                                                    className="form-control bg-white"/>
+                                        </div> 
+                                        <div className="col-md-2 mb-2">   
+                                            <button onClick={this.addList} className="btn btn-block btn-outline-primary bg-white">Submit new list</button> 
+                                        </div>
+                                    </div> 
+                                </div>   
                             </form>
                             <div className="m-2">{this.state.formInfo}</div>
-                        </div>
-                    </div>
+                    
                 </div>
                 <div className="row m-2">
                         {<MultiListContainer    

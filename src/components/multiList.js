@@ -43,7 +43,7 @@ class MultiList extends Component {
     render() {
         return (
             <div>
-                <div className="mr-2 mb-4 p-2 border rounded bg-light">    
+                <div className="mb-4 p-2 border rounded bg-light">    
                     <div className="text-center mb-4 ">
                         <h2 className="">{this.props.listTitle}</h2>
                     </div>
